@@ -1,5 +1,7 @@
 #include "Lexer.h"
 #include <iostream>
+#include <cctype>
+#include <vector>
 
 
 Lexer::Lexer(const std::string& source) {
@@ -24,12 +26,24 @@ bool Lexer::isAtEnd() {
 }
 
 char Lexer::peek(){
-    if(current>=source.lenght()) retunr "\0";
+    if(current>=source.length()) return '\0';
     return source[current];
 }
 
-char Lexer::advance() {
-    return source[current++];
+void Lexer::identifier(){
+    while (isalnum(peek())) advance();
+
+
+    std::string text = source.substr(start, current - start);
+    TokenType type;
+
+    if (keywords.find(text) != keywords.end()) {
+        type = keywords[text];
+    } else {
+        type = TokenType::IDENTIFIER; 
+    }
+    
+    addToken(type);
 }
 
 
@@ -39,16 +53,45 @@ void Lexer::addToken(TokenType type) {
     tokens.push_back({type, text, line});
 }
 
+void Lexer::number(){
+    
+ 
+    while (isdigit(peek())) advance();
+   if (peek() == '.' && isdigit(source[current + 1])) {
+        advance(); 
+
+
+        while (isdigit(peek())) advance();
+    }
+
+    if (peek() == '.') {
+        std::cerr << "ERROR: Multiple points in a numerical expression! Line: " << line << std::endl;
+        
+        return; 
+    }
+
+    addToken(TokenType::NUMBER);
+        
+    
+
+}
+
 char Lexer::advance() {
     return source[current++];
 }
 
 std::vector<Token> Lexer::tokenize(){
-    vector<Token> tokens;
+
+   
+
     while (!isAtEnd()){
         start = current;
         scanToken();
     }
+
+    tokens.push_back({TokenType::END_OF_FILE, "", line});
+    
+    return tokens;
 }
 
 void Lexer::scanToken() {
@@ -93,7 +136,7 @@ void Lexer::scanToken() {
 
             break;
 
-        case '\n': b:
+        case '\n': 
             line++; 
             break;
 

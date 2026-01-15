@@ -3,33 +3,36 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "Token.h"
 
 class Lexer {
 private:
 
-
+    std::vector<Token> tokens;
     std::string source; 
     int pos = 0;        
     int line = 1;      
-
-
-    char current();    
-    char peek();        
-    void advance();     
+    int current=0;
+    int start=0;
+   
+    std::map<std::string, TokenType> keywords;
+    
+    char peek();    
+    bool isAtEnd();
+    char advance();     
     void addToken(TokenType type); 
     void addToken(TokenType type, std::string text);
     
    
-   void scanToken();      
+    void scanToken();      
     void string();          
     void number();           
     void identifier();
 
 public:
     // Constructor
-    Lexer(std::string src) : source(src) {}
-    
+ Lexer(const std::string& source);
 
     std::vector<Token> tokenize();
 };
